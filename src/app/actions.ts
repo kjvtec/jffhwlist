@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeDetail } from "@/lib/detail";
+import { SPECS } from "@/lib/specs";
 import { GROUPS, belongs, expectedIn } from "@/lib/groups";
 
 // เพิ่มสาขาหลายรายการ: บรรทัดละ "รหัส,ชื่อสาขา"
@@ -64,9 +65,14 @@ export async function deleteEquipment(id: string, branchId: string) {
 }
 
 // สร้างรายการอุปกรณ์ตามเทมเพลต (ไม่มี Serial) ให้สาขา: เติมเฉพาะที่ยังขาด ไม่ซ้ำของเดิม
+// สเปกตั้งต้นของชนิดอุปกรณ์ (จากไฟล์ Excel) ใช้เป็นรายละเอียดเริ่มต้น
+function specNote(code: string) {
+  return SPECS[code]?.length ? normalizeDetail(SPECS[code].join("\n")).join("\n") : null;
+}
+
 async function fillTemplate(branchIds: string[] | null) {
   const supabase = await createClient();
-  const { data: types } = await supabase.from("equipment_types").select("id,grp,qty_per_branch");
+  const { data: types } = await supabase.from("equipment_types").select("id,code,grp,qty_per_branch");
   let ids = branchIds;
   if (!ids) {
     ids = [];
@@ -94,10 +100,21 @@ async function fillTemplate(branchIds: string[] | null) {
         if (!belongs(t, g)) continue;
         const need = expectedIn(t, g) - (have.get(`${branch_id}|${t.id}|${g}`) ?? 0);
         for (let i = 0; i < need; i++) {
-          rows.push({ branch_id, type_id: t.id, grp: g, owner: "VTEC", status: "in_use", serial_no: null });
+          rows.push({
+            branch_id, type_id: t.id, grp: g, owner: "VTEC", status: "in_use", serial_no: null,
+            note: specNote(t.code),
+          });
         }
       }
     }
+  }
+  // เติมรายละเอียดให้แถวเดิมที่ยังว่าง
+  for (const t of types ?? []) {
+    const note = specNote(t.code);
+    if (!note) continue;
+    let u = supabase.from("equipment").update({ note }).eq("type_id", t.id).is("note", null);
+    if (branchIds) u = u.in("branch_id", branchIds);
+    await u;
   }
   for (let i = 0; i < rows.length; i += 500) {
     const { error } = await supabase.from("equipment").insert(rows.slice(i, i + 500));
