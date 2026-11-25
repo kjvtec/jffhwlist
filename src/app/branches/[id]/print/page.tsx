@@ -5,6 +5,13 @@ import PrintButton from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
 
+// Chrome ใช้ชื่อหน้า (title) เป็นชื่อไฟล์ PDF ตอนบันทึก
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { branch } = await loadExportRows(id);
+  return { title: branch ? `Hardware_${branch.code}_${branch.name}` : "Hardware" };
+}
+
 export default async function PrintPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { branch, rows } = await loadExportRows(id);
