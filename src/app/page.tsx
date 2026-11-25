@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { logout } from "./actions";
 import AddBranches from "@/components/AddBranches";
 import BranchList from "@/components/BranchList";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -20,7 +21,6 @@ export default async function Home() {
         <h1 className="text-xl font-semibold">อุปกรณ์รายสาขา Jiffy ({rows.length} สาขา)</h1>
         <div className="flex gap-2 items-center">
           <AddBranches />
-          <form action={logout}><button className="text-sm text-slate-600 px-2">ออกจากระบบ</button></form>
         </div>
       </header>
       <BranchList rows={rows} expected={expected} />

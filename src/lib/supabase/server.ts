@@ -1,22 +1,10 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClient as createSupabase } from "@supabase/supabase-js";
 
+// ใช้ secret key ฝั่งเซิร์ฟเวอร์เท่านั้น (ไม่มี prefix NEXT_PUBLIC จึงไม่ถูกส่งไปที่เบราว์เซอร์)
 export async function createClient() {
-  const store = await cookies();
-  return createServerClient(
+  return createSupabase(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => store.getAll(),
-        setAll: (list) => {
-          try {
-            list.forEach(({ name, value, options }) => store.set(name, value, options));
-          } catch {
-            /* เรียกจาก Server Component: proxy จะ refresh session ให้ */
-          }
-        },
-      },
-    },
+    process.env.SUPABASE_SECRET_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false } },
   );
 }
