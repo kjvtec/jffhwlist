@@ -132,19 +132,6 @@ export default function EquipmentTable({
               </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-              {gTypes.map((t) => {
-                const n = gAll.filter((r) => r.type_id === t.id && r.status !== "lost").length;
-                const need = expectedIn(t, g);
-                return (
-                  <div key={t.id} className={`rounded-xl border p-3 text-sm shadow-sm ${n >= need ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
-                    <div className="text-[#044492] font-bold">{t.name}</div>
-                    <div className="font-semibold">{n}/{need}</div>
-                  </div>
-                );
-              })}
-            </div>
-
             <div className="overflow-x-auto bg-white rounded-2xl border border-[#B8DCFF] shadow-sm">
               <table className="w-full text-sm">
                 <thead className="bg-[#EFF7FF] text-[#044492] text-left">
