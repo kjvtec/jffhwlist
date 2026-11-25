@@ -17,6 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-[#F4F8FD] text-slate-900 font-sans pb-20">
         <Nav />
         {children}
+        <footer className="print:hidden mt-10 py-6 text-center text-xs text-slate-500 border-t border-[#D8E9FF]">
+          Hardware Inventory Jiffy • VTec Pos Retail • Jiffy Project
+        </footer>
       </body>
     </html>
   );

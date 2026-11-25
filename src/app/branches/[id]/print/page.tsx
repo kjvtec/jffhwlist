@@ -33,7 +33,7 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
       <header className="border-b-2 border-[#0C2553] pb-2 mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logos/jiffy-print.png" alt="Jiffy" className="h-11 w-auto object-contain shrink-0" />
+          <img src="/logos/jiffy-logo.png" alt="Jiffy" className="h-11 w-auto object-contain shrink-0" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logos/pttrm-print.jpg" alt="PTT RM" className="h-11 w-auto object-contain shrink-0" />
           <span className="h-9 w-px bg-slate-300 shrink-0" />
@@ -48,7 +48,7 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
       {GROUPS.map((g) => {
         const list = rows.filter((r) => r.group === g);
         return (
-          <section key={g} className="mb-4 break-inside-avoid-page">
+          <section key={g} className="mb-3 break-inside-avoid-page">
             <h2 className="bg-[#0C2553] text-white text-[11px] font-bold px-2 py-1">{g} ({list.length} รายการ)</h2>
             <table className="w-full text-[10px] border-collapse table-fixed">
               <colgroup>
@@ -60,21 +60,21 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
               </colgroup>
               <thead>
                 <tr className="bg-[#EFF7FF] text-[#044492] text-left">
-                  <th className="border border-[#B8DCFF] p-1">#</th>
-                  <th className="border border-[#B8DCFF] p-1">ชนิดอุปกรณ์</th>
-                  <th className="border border-[#B8DCFF] p-1">Owner</th>
-                  <th className="border border-[#B8DCFF] p-1">ยี่ห้อ / รุ่น</th>
-                  <th className="border border-[#B8DCFF] p-1">Serial</th>
+                  <th className="border border-[#B8DCFF] px-1 py-[2px]">#</th>
+                  <th className="border border-[#B8DCFF] px-1 py-[2px]">ชนิดอุปกรณ์</th>
+                  <th className="border border-[#B8DCFF] px-1 py-[2px]">Owner</th>
+                  <th className="border border-[#B8DCFF] px-1 py-[2px]">ยี่ห้อ / รุ่น</th>
+                  <th className="border border-[#B8DCFF] px-1 py-[2px]">Serial</th>
                 </tr>
               </thead>
               <tbody>
                 {list.map((r, i) => (
                   <tr key={i} className="break-inside-avoid align-top">
-                    <td className="border border-[#D8E9FF] p-1">{i + 1}</td>
-                    <td className="border border-[#D8E9FF] p-1">{r.typeCode} {r.typeName}</td>
-                    <td className="border border-[#D8E9FF] p-1">{r.owner}</td>
-                    <td className="border border-[#D8E9FF] p-1">{r.brandModel || "-"}</td>
-                    <td className="border border-[#D8E9FF] p-1 font-mono break-all">{r.serial || "-"}</td>
+                    <td className="border border-[#D8E9FF] px-1 py-[2px]">{i + 1}</td>
+                    <td className="border border-[#D8E9FF] px-1 py-[2px]">{r.typeCode} {r.typeName}</td>
+                    <td className="border border-[#D8E9FF] px-1 py-[2px]">{r.owner}</td>
+                    <td className="border border-[#D8E9FF] px-1 py-[2px]">{r.brandModel || "-"}</td>
+                    <td className="border border-[#D8E9FF] px-1 py-[2px] font-mono break-all">{r.serial || "-"}</td>
                   </tr>
                 ))}
                 {!list.length && (
@@ -85,6 +85,18 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
           </section>
         );
       })}
+      <footer className="mt-6 break-inside-avoid text-[10px] text-slate-600">
+        <div className="grid grid-cols-3 gap-6 text-center">
+          {["ผู้ตรวจสอบ", "ผู้ตรวจรับ (สาขา)", "วันที่ตรวจสอบ"].map((l) => (
+            <div key={l} className="pt-8">
+              <div className="border-t border-slate-400 pt-1">{l}</div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 pt-2 border-t border-[#B8DCFF] text-center text-slate-500">
+          เอกสารนี้จัดทำจากระบบ Hardware Inventory Jiffy • VTec Pos Retail • Jiffy Project — ใช้สำหรับตรวจสอบอุปกรณ์ประจำสาขา {branch.code}
+        </p>
+      </footer>
         </td></tr></tbody>
       </table>
     </main>
