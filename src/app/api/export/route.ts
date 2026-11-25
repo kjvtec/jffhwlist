@@ -1,4 +1,5 @@
 import ExcelJS from "exceljs";
+import { normalizeDetail } from "@/lib/detail";
 import { loadExportRows } from "@/lib/export-data";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +32,9 @@ export async function GET(req: Request) {
     { header: "Serial", key: "serial", width: 22 },
     { header: "รายละเอียด", key: "detail", width: 40 },
   ];
-  rows.forEach((r) => ws.addRow(r));
+  rows.forEach((r) =>
+    ws.addRow({ ...r, detail: normalizeDetail(r.detail).map((l) => `• ${l}`).join("\n") }),
+  );
 
   const head = ws.getRow(1);
   head.font = { bold: true, color: { argb: "FFFFFFFF" } };

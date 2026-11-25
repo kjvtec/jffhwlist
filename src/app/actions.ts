@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { normalizeDetail } from "@/lib/detail";
 import { GROUPS, belongs, expectedIn } from "@/lib/groups";
 
 // เพิ่มสาขาหลายรายการ: บรรทัดละ "รหัส,ชื่อสาขา"
@@ -42,7 +43,7 @@ export async function saveEquipment(_: unknown, fd: FormData) {
     serial_no: String(fd.get("serial_no") ?? "").trim() || null,
     brand: String(fd.get("brand") ?? "").trim() || null,
     model: String(fd.get("model") ?? "").trim() || null,
-    note: String(fd.get("note") ?? "").trim() || null,
+    note: normalizeDetail(String(fd.get("note") ?? "")).join("\n") || null,
     updated_at: new Date().toISOString(),
   };
   const supabase = await createClient();

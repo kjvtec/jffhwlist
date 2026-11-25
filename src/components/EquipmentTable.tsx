@@ -2,6 +2,8 @@
 
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { deleteEquipment, saveEquipment } from "@/app/actions";
+import DetailList from "@/components/DetailList";
+import { SPECS } from "@/lib/specs";
 import { GROUPS, OWNERS, belongs, expectedIn } from "@/lib/groups";
 
 export type EqType = {
@@ -181,8 +183,8 @@ export default function EquipmentTable({
               <dt className="text-slate-500">ยี่ห้อ / รุ่น</dt><dd>{[viewing.brand, viewing.model].filter(Boolean).join(" ") || "-"}</dd>
               <dt className="text-slate-500">Serial</dt><dd className="font-mono">{viewing.serial_no ?? "-"}</dd>
             </dl>
-            <div className="rounded-xl bg-[#F4F9FF] border border-[#D8E9FF] p-3 text-sm whitespace-pre-wrap min-h-16">
-              {viewing.note || <span className="text-slate-400">ยังไม่มีรายละเอียด</span>}
+            <div className="rounded-xl bg-[#F4F9FF] border border-[#D8E9FF] p-3 text-sm min-h-16">
+              {viewing.note ? <DetailList text={viewing.note} /> : <span className="text-slate-400">ยังไม่มีรายละเอียด</span>}
             </div>
             <div className="flex justify-end gap-2">
               <button onClick={() => { const it = viewing; setViewing(null); setEditing({ item: it, grp: it.grp ?? "" }); }} className="text-[#0086FF] px-3 py-2 text-sm">แก้ไข</button>
@@ -220,6 +222,10 @@ function EquipmentForm({
 }) {
   const [state, action, pending] = useActionState(saveEquipment, null);
   const [grp, setGrp] = useState(initialGroup);
+  const [typeId, setTypeId] = useState<number | undefined>(
+    types.find((t) => t.id === item?.type_id && belongs(t, initialGroup))?.id ?? types.find((t) => belongs(t, initialGroup))?.id,
+  );
+  const [note, setNote] = useState(item?.note ?? "");
   useEffect(() => {
     if (state && "ok" in state) onClose();
   }, [state, onClose]);
@@ -233,7 +239,11 @@ function EquipmentForm({
         <input type="hidden" name="branch_id" value={branchId} />
         <div className="grid grid-cols-2 gap-2">
           <label className="block text-sm">Group
-            <select name="grp" value={grp} onChange={(e) => setGrp(e.target.value)} className={field}>
+            <select name="grp" value={grp} onChange={(e) => {
+                const g = e.target.value;
+                setGrp(g);
+                if (!types.some((t) => t.id === typeId && belongs(t, g))) setTypeId(types.find((t) => belongs(t, g))?.id);
+              }} className={field}>
               {GROUPS.map((g) => <option key={g} value={g}>{g}</option>)}
             </select>
           </label>
@@ -244,12 +254,7 @@ function EquipmentForm({
           </label>
         </div>
         <label className="block text-sm">ชนิดอุปกรณ์
-          <select
-            key={grp}
-            name="type_id"
-            defaultValue={options.some((t) => t.id === item?.type_id) ? item?.type_id : options[0]?.id}
-            className={field}
-          >
+          <select name="type_id" value={typeId ?? ""} onChange={(e) => setTypeId(Number(e.target.value))} className={field}>
             {options.map((t) => <option key={t.id} value={t.id}>{t.code} {t.name}</option>)}
           </select>
         </label>
@@ -260,7 +265,28 @@ function EquipmentForm({
           <label className="block text-sm">ยี่ห้อ<input name="brand" defaultValue={item?.brand ?? ""} className={field} /></label>
           <label className="block text-sm">รุ่น<input name="model" defaultValue={item?.model ?? ""} className={field} /></label>
         </div>
-        <label className="block text-sm">รายละเอียดอุปกรณ์<textarea name="note" rows={5} placeholder="สเปก, ตำแหน่งติดตั้ง, หมายเหตุอื่น ๆ" defaultValue={item?.note ?? ""} className={field} /></label>
+        <div className="text-sm">
+          <div className="flex items-center justify-between mb-1">
+            <span>รายละเอียดอุปกรณ์</span>
+            {(() => {
+              const code = types.find((t) => t.id === typeId)?.code ?? "";
+              return SPECS[code] ? (
+                <button type="button" onClick={() => setNote(SPECS[code].join("\n"))} className="text-[#0086FF] text-xs">
+                  ใส่สเปกตั้งต้น
+                </button>
+              ) : null;
+            })()}
+          </div>
+          <textarea
+            name="note"
+            rows={7}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder={"พิมพ์บรรทัดละ 1 หัวข้อ เช่น\nDisplay: 15\" TFT LCD\nMemory: 8 GB"}
+            className={field}
+          />
+          <p className="text-xs text-slate-400 mt-1">ระบบจัดบรรทัดให้อัตโนมัติ: แสดงเป็น bullet และหัวข้อตัวหนา (รูปแบบ หัวข้อ: ค่า)</p>
+        </div>
         {state && "error" in state && <p className="text-sm text-red-600">{state.error}</p>}
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm">ยกเลิก</button>

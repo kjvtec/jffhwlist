@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { loadExportRows } from "@/lib/export-data";
 import { GROUPS } from "@/lib/groups";
+import DetailList from "@/components/DetailList";
 import PrintButton from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
@@ -58,7 +59,7 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
                     <td className="border border-[#D8E9FF] p-1">{r.owner}</td>
                     <td className="border border-[#D8E9FF] p-1">{r.brandModel || "-"}</td>
                     <td className="border border-[#D8E9FF] p-1 font-mono break-all">{r.serial || "-"}</td>
-                    <td className="border border-[#D8E9FF] p-1 whitespace-pre-wrap">{r.detail}</td>
+                    <td className="border border-[#D8E9FF] p-1"><DetailList text={r.detail} className="pl-3" /></td>
                   </tr>
                 ))}
                 {!list.length && (
