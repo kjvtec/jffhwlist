@@ -19,18 +19,27 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
   const today = new Date().toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" });
 
   return (
-    <main className="print-sheet mx-auto bg-white p-6 print:p-0 my-4 print:my-0 shadow print:shadow-none">
+    <main className="print-sheet mx-auto bg-white p-6 print:px-[10mm] print:py-0 my-4 print:my-0 shadow print:shadow-none">
       <div className="print:hidden flex items-center justify-between mb-4">
         <p className="text-sm text-slate-500">ตั้งค่าพิมพ์เป็น A4 → เลือก &quot;บันทึกเป็น PDF&quot; เพื่อได้ไฟล์ PDF</p>
         <PrintButton />
       </div>
 
-      <header className="border-b-2 border-[#0C2553] pb-2 mb-3 flex items-end justify-between">
+      {/* ตัวเว้นขอบบน/ล่าง 10 มม. ทุกหน้า (thead/tfoot ซ้ำทุกหน้าตอนพิมพ์) เพราะตั้ง @page margin = 0 เพื่อซ่อน header/footer ของเบราว์เซอร์ */}
+      <table className="w-full border-collapse">
+        <thead><tr><td className="p-0"><div className="print:h-[10mm]" /></td></tr></thead>
+        <tfoot><tr><td className="p-0"><div className="print:h-[10mm]" /></td></tr></tfoot>
+        <tbody><tr><td className="p-0 align-top">
+      <header className="border-b-2 border-[#0C2553] pb-2 mb-3 flex items-center justify-between">
         <div>
           <h1 className="text-base font-extrabold text-[#0C2553]">รายการอุปกรณ์ Hardware — สาขา {branch.code} {branch.name}</h1>
           <p className="text-[10px] text-slate-500">VTec Pos Retail • Jiffy Project</p>
         </div>
-        <p className="text-[10px] text-slate-500">พิมพ์เมื่อ {today}</p>
+        <div className="flex items-center gap-3">
+          <p className="text-[10px] text-slate-500">พิมพ์เมื่อ {today}</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logos/jiffy-logo.png" alt="Jiffy" className="h-12 w-auto object-contain" />
+        </div>
       </header>
 
       {GROUPS.map((g) => {
@@ -73,6 +82,8 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
           </section>
         );
       })}
+        </td></tr></tbody>
+      </table>
     </main>
   );
 }

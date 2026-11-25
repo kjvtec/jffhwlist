@@ -8,7 +8,7 @@
 /* พิมพ์ A4 พอดี */
 @page {
   size: A4 portrait;
-  margin: 10mm;
+  margin: 0; /* ซ่อนวันที่/ชื่อหน้า/URL ที่เบราว์เซอร์พิมพ์ในขอบกระดาษ */
 }
 
 .print-sheet {
