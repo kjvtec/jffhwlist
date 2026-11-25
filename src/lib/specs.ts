@@ -114,7 +114,7 @@ export const SPECS: Record<string, string[]> = {
     "LED Indicator:  แสดงสถานะการทำงาน",
     "Compliance:  USB CCID, PC/SC Compatible"
   ],
-  "2": [
+  "2.1": [
     "Product Type:  Rugged Enterprise Mobile Computer",
     "Operating System:  Android (upgradeable through future Android releases)",
     "Processor:  Qualcomm® 5430 Hex-Core, 2.1 GHz",
@@ -132,7 +132,7 @@ export const SPECS: Record<string, string[]> = {
     "Weight:  Approx. 236 g (standard battery)",
     "USB Port:  USB Type-C"
   ],
-  "3": [
+  "2.2": [
     "Product Type:  Monochrome Laser Printer",
     "Functions:  Print Only",
     "Print Technology:  Laser",
