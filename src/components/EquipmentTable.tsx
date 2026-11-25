@@ -84,8 +84,8 @@ export default function EquipmentTable({
           const have = counts.get(t.id) ?? 0;
           const ok = have >= t.qty_per_branch;
           return (
-            <div key={t.id} className={`rounded-lg border p-2 text-sm ${ok ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200"}`}>
-              <div className="text-slate-600">{t.name}</div>
+            <div key={t.id} className={`rounded-xl border p-3 text-sm shadow-sm ${ok ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
+              <div className="text-[#044492] font-bold">{t.name}</div>
               <div className="font-semibold">{have}/{t.qty_per_branch}</div>
             </div>
           );
@@ -93,21 +93,21 @@ export default function EquipmentTable({
       </div>
 
       <div className="flex flex-wrap gap-2 items-center">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหา Serial / ยี่ห้อ / รุ่น" className="border rounded-lg px-3 py-2 w-full sm:w-72" />
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border rounded-lg px-3 py-2">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหา Serial / ยี่ห้อ / รุ่น" className="border border-[#B8DCFF] rounded-xl px-3 py-2 w-full sm:w-72" />
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-[#B8DCFF] rounded-xl px-3 py-2">
           <option value="">ทุกสถานะ</option>
           {Object.entries(STATUS).map(([k, v]) => (
             <option key={k} value={k}>{v.label}</option>
           ))}
         </select>
-        <button onClick={() => setEditing("new")} className="ml-auto bg-slate-900 text-white rounded-lg px-4 py-2 text-sm">
+        <button onClick={() => setEditing("new")} className="ml-auto bg-[#FFCB06] hover:bg-[#F5C000] text-[#0C2553] font-extrabold border border-[#E5B300] shadow-sm rounded-xl px-4 py-2 text-sm">
           + เพิ่มอุปกรณ์
         </button>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-xl shadow">
+      <div className="overflow-x-auto bg-white rounded-2xl border border-[#B8DCFF] shadow-sm">
         <table className="w-full text-sm">
-          <thead className="bg-slate-100 text-left">
+          <thead className="bg-[#EFF7FF] text-[#044492] text-left">
             <tr>
               <th className="p-3">#</th>
               {th("type", "ชนิดอุปกรณ์")}
@@ -121,16 +121,16 @@ export default function EquipmentTable({
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={r.id} className="border-t hover:bg-slate-50">
+              <tr key={r.id} className="border-t border-[#D8E9FF] hover:bg-[#F4F9FF]">
                 <td className="p-3 text-slate-500">{i + 1}</td>
                 <td className="p-3">{typeMap.get(r.type_id)?.code} {typeMap.get(r.type_id)?.name}</td>
                 <td className="p-3">{[r.brand, r.model].filter(Boolean).join(" ") || "-"}</td>
-                <td className="p-3 font-mono">{r.serial_no}</td>
+                <td className="p-3 font-mono text-[#0C2553]">{r.serial_no}</td>
                 <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-xs ${STATUS[r.status].cls}`}>{STATUS[r.status].label}</span></td>
                 <td className="p-3">{r.installed_at ?? "-"}</td>
                 <td className="p-3 text-slate-600">{r.note ?? ""}</td>
                 <td className="p-3 whitespace-nowrap text-right">
-                  <button onClick={() => setEditing(r)} className="text-blue-700 mr-3">แก้ไข</button>
+                  <button onClick={() => setEditing(r)} className="text-[#0086FF] mr-3">แก้ไข</button>
                   <button
                     onClick={() => {
                       if (confirm(`ลบ ${r.serial_no} ?`)) deleteEquipment(r.id, branchId);
@@ -176,7 +176,7 @@ function EquipmentForm({
   useEffect(() => {
     if (state && "ok" in state) onClose();
   }, [state, onClose]);
-  const field = "w-full border rounded-lg px-3 py-2";
+  const field = "w-full border border-[#B8DCFF] rounded-xl px-3 py-2";
   return (
     <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-10" onClick={onClose}>
       <form action={action} onClick={(e) => e.stopPropagation()} className="bg-white rounded-xl p-5 w-full max-w-md space-y-3 max-h-[90vh] overflow-y-auto">
@@ -209,7 +209,7 @@ function EquipmentForm({
         {state && "error" in state && <p className="text-sm text-red-600">{state.error}</p>}
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm">ยกเลิก</button>
-          <button disabled={pending} className="bg-slate-900 text-white rounded-lg px-4 py-2 text-sm disabled:opacity-50">
+          <button disabled={pending} className="bg-[#FFCB06] hover:bg-[#F5C000] text-[#0C2553] font-extrabold border border-[#E5B300] shadow-sm rounded-xl px-4 py-2 text-sm disabled:opacity-50">
             {pending ? "กำลังบันทึก..." : "บันทึก"}
           </button>
         </div>

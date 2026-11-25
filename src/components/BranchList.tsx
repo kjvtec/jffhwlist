@@ -16,10 +16,10 @@ export default function BranchList({ rows, expected }: { rows: BranchRow[]; expe
 
   return (
     <div className="space-y-3">
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหารหัสหรือชื่อสาขา" className="w-full sm:w-80 border rounded-lg px-3 py-2" />
-      <div className="overflow-x-auto bg-white rounded-xl shadow">
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหารหัสหรือชื่อสาขา" className="w-full sm:w-80 border border-[#B8DCFF] rounded-xl px-3 py-2" />
+      <div className="overflow-x-auto bg-white rounded-2xl border border-[#B8DCFF] shadow-sm">
         <table className="w-full text-sm">
-          <thead className="bg-slate-100 text-left">
+          <thead className="bg-[#EFF7FF] text-[#044492] text-left">
             <tr>
               <th className="p-3 cursor-pointer" onClick={() => setDesc(!desc)}>รหัส {desc ? "▼" : "▲"}</th>
               <th className="p-3">ชื่อสาขา</th>
@@ -29,8 +29,8 @@ export default function BranchList({ rows, expected }: { rows: BranchRow[]; expe
           </thead>
           <tbody>
             {list.map((r) => (
-              <tr key={r.id} className="border-t hover:bg-slate-50">
-                <td className="p-3 font-mono"><Link href={`/branches/${r.id}`} className="text-blue-700 underline">{r.code}</Link></td>
+              <tr key={r.id} className="border-t border-[#D8E9FF] hover:bg-[#F4F9FF]">
+                <td className="p-3 font-mono"><Link href={`/branches/${r.id}`} className="text-[#0086FF] underline">{r.code}</Link></td>
                 <td className="p-3">{r.name}</td>
                 <td className="p-3">{r.total}/{expected}</td>
                 <td className="p-3">

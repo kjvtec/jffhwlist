@@ -19,11 +19,11 @@ export default async function BranchPage({ params }: { params: Promise<{ id: str
   if (!branch) notFound();
 
   return (
-    <main className="max-w-6xl mx-auto p-4 space-y-4">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/" className="text-sm text-blue-700">← กลับหน้าสาขา</Link>
-          <h1 className="text-xl font-semibold">
+          <Link href="/" className="text-sm text-[#0086FF]">← กลับหน้าสาขา</Link>
+          <h1 className="text-xl font-extrabold text-[#0C2553]">
             {branch.code} · {branch.name}
           </h1>
         </div>
