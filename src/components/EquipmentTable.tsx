@@ -17,7 +17,7 @@ export type Equipment = {
   type_id: number;
   grp: string | null;
   owner: string;
-  serial_no: string;
+  serial_no: string | null;
   brand: string | null;
   model: string | null;
   status: "in_use" | "spare" | "repair" | "lost";
@@ -79,7 +79,7 @@ export default function EquipmentTable({
           typeof x === "number" && typeof y === "number"
             ? x - y
             : String(x).localeCompare(String(y), "th", { numeric: true });
-        return (c || a.serial_no.localeCompare(b.serial_no, undefined, { numeric: true })) * (sort.desc ? -1 : 1);
+        return (c || (a.serial_no ?? "").localeCompare(b.serial_no ?? "", undefined, { numeric: true })) * (sort.desc ? -1 : 1);
       });
   }, [items, q, statusFilter, ownerFilter, sort, typeMap]);
 
@@ -169,7 +169,7 @@ export default function EquipmentTable({
                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${r.owner === "VTEC" ? "bg-[#EFF7FF] text-[#044492]" : "bg-[#FFFBEB] text-[#8A6500]"}`}>{r.owner}</span>
                       </td>
                       <td className="p-3">{[r.brand, r.model].filter(Boolean).join(" ") || "-"}</td>
-                      <td className="p-3 font-mono text-[#0C2553]">{r.serial_no}</td>
+                      <td className="p-3 font-mono text-[#0C2553]">{r.serial_no ?? "-"}</td>
                       <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-xs ${STATUS[r.status].cls}`}>{STATUS[r.status].label}</span></td>
                       <td className="p-3">{r.installed_at ?? "-"}</td>
                       <td className="p-3 text-slate-600">{r.note ?? ""}</td>
@@ -177,7 +177,7 @@ export default function EquipmentTable({
                         <button onClick={() => setEditing({ item: r, grp: g })} className="text-[#0086FF] mr-3">แก้ไข</button>
                         <button
                           onClick={() => {
-                            if (confirm(`ลบ ${r.serial_no} ?`)) deleteEquipment(r.id, branchId);
+                            if (confirm(`ลบ ${typeMap.get(r.type_id)?.name} ${r.serial_no ?? ""} ?`)) deleteEquipment(r.id, branchId);
                           }}
                           className="text-red-600"
                         >
@@ -257,8 +257,8 @@ function EquipmentForm({
             {options.map((t) => <option key={t.id} value={t.id}>{t.code} {t.name}</option>)}
           </select>
         </label>
-        <label className="block text-sm">Serial
-          <input name="serial_no" required defaultValue={item?.serial_no} className={field} />
+        <label className="block text-sm">Serial (ไม่บังคับ)
+          <input name="serial_no" defaultValue={item?.serial_no ?? ""} className={field} />
         </label>
         <div className="grid grid-cols-2 gap-2">
           <label className="block text-sm">ยี่ห้อ<input name="brand" defaultValue={item?.brand ?? ""} className={field} /></label>

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import AddBranches from "@/components/AddBranches";
+import TemplateButton from "@/components/TemplateButton";
 import BranchList from "@/components/BranchList";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,7 @@ export default async function Home() {
             <div className="text-xs text-[#B8DCFF]">{l}</div>
           </div>
         ))}
+        <TemplateButton branchId={null} label="เติมเทมเพลตทุกสาขา" />
         <AddBranches />
       </section>
       <BranchList rows={rows} expected={expected} />

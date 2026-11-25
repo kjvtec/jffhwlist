@@ -1,4 +1,4 @@
-export const GROUPS = ["Manager Room", "Back Office / Network", "POS 1", "POS 2"] as const;
+export const GROUPS = ["Manager Room / Back Office Network", "POS 1", "POS 2"] as const;
 export type Group = (typeof GROUPS)[number];
 
 export const OWNERS = ["VTEC", "PTTRM ICT"] as const;

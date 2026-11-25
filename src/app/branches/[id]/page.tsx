@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import EquipmentTable, { type Equipment, type EqType } from "@/components/EquipmentTable";
+import TemplateButton from "@/components/TemplateButton";
 import { deleteBranch } from "../../actions";
 
 export default async function BranchPage({ params }: { params: Promise<{ id: string }> }) {
@@ -27,6 +28,8 @@ export default async function BranchPage({ params }: { params: Promise<{ id: str
             {branch.code} · {branch.name}
           </h1>
         </div>
+        <div className="flex items-center gap-3">
+        <TemplateButton branchId={id} label="เติมตามเทมเพลต" />
         <form
           action={async () => {
             "use server";
@@ -35,6 +38,7 @@ export default async function BranchPage({ params }: { params: Promise<{ id: str
         >
           <button className="text-sm text-red-600">ลบสาขา</button>
         </form>
+        </div>
       </div>
       <EquipmentTable
         branchId={id}
