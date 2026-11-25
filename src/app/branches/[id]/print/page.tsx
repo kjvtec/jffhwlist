@@ -1,3 +1,4 @@
+import pkg from "../../../../../package.json";
 import { notFound } from "next/navigation";
 import { loadExportRows } from "@/lib/export-data";
 import { GROUPS } from "@/lib/groups";
@@ -42,7 +43,6 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
             <p className="text-[10px] text-slate-500">VTec Pos Retail • Jiffy Project</p>
           </div>
         </div>
-        <p className="text-[10px] text-slate-500 shrink-0">พิมพ์เมื่อ {today}</p>
       </header>
 
       {GROUPS.map((g) => {
@@ -85,17 +85,9 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
           </section>
         );
       })}
-      <footer className="mt-6 break-inside-avoid text-[10px] text-slate-600">
-        <div className="grid grid-cols-3 gap-6 text-center">
-          {["ผู้ตรวจสอบ", "ผู้ตรวจรับ (สาขา)", "วันที่ตรวจสอบ"].map((l) => (
-            <div key={l} className="pt-8">
-              <div className="border-t border-slate-400 pt-1">{l}</div>
-            </div>
-          ))}
-        </div>
-        <p className="mt-4 pt-2 border-t border-[#B8DCFF] text-center text-slate-500">
-          เอกสารนี้จัดทำจากระบบ Hardware Inventory Jiffy • VTec Pos Retail • Jiffy Project — ใช้สำหรับตรวจสอบอุปกรณ์ประจำสาขา {branch.code}
-        </p>
+      <footer className="mt-6 pt-2 border-t border-[#B8DCFF] break-inside-avoid flex items-center justify-between text-[10px] text-slate-500">
+        <span>Hardware Inventory Jiffy • เวอร์ชัน {pkg.version}</span>
+        <span>พิมพ์เมื่อ {today}</span>
       </footer>
         </td></tr></tbody>
       </table>
