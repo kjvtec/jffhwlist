@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { SPECS } from "@/lib/specs";
+import DetailList from "@/components/DetailList";
 
 export const dynamic = "force-dynamic";
 
@@ -30,11 +31,9 @@ export default async function TypesPage() {
               </span>
               <span className="text-sm px-3 py-1 rounded-xl bg-[#FFCB06] text-[#0C2553]">{t.qty_per_branch} ชิ้น/สาขา</span>
             </summary>
-            <ul className="px-5 pb-4 text-sm text-slate-600 space-y-1 border-t border-[#D8E9FF] pt-3">
-              {(SPECS[t.code] ?? []).map((line) => (
-                <li key={line} className="font-mono text-xs sm:text-sm">{line}</li>
-              ))}
-            </ul>
+            <div className="px-5 pb-4 text-sm text-slate-700 border-t border-[#D8E9FF] pt-3">
+              <DetailList text={(SPECS[t.code] ?? []).join(String.fromCharCode(10))} />
+            </div>
           </details>
         ))}
       </div>
