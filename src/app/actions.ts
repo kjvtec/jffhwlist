@@ -42,8 +42,6 @@ export async function saveEquipment(_: unknown, fd: FormData) {
     serial_no: String(fd.get("serial_no") ?? "").trim() || null,
     brand: String(fd.get("brand") ?? "").trim() || null,
     model: String(fd.get("model") ?? "").trim() || null,
-    status: String(fd.get("status")),
-    installed_at: String(fd.get("installed_at") ?? "") || null,
     note: String(fd.get("note") ?? "").trim() || null,
     updated_at: new Date().toISOString(),
   };

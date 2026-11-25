@@ -20,19 +20,10 @@ export type Equipment = {
   serial_no: string | null;
   brand: string | null;
   model: string | null;
-  status: "in_use" | "spare" | "repair" | "lost";
-  installed_at: string | null;
   note: string | null;
 };
 
-const STATUS: Record<Equipment["status"], { label: string; cls: string }> = {
-  in_use: { label: "ใช้งาน", cls: "bg-green-100 text-green-800" },
-  spare: { label: "สำรอง", cls: "bg-blue-100 text-blue-800" },
-  repair: { label: "ซ่อม", cls: "bg-amber-100 text-amber-800" },
-  lost: { label: "สูญหาย", cls: "bg-red-100 text-red-800" },
-};
-
-type SortKey = "type" | "serial_no" | "brand" | "owner" | "status" | "installed_at";
+type SortKey = "type" | "serial_no" | "brand" | "owner";
 
 export default function EquipmentTable({
   branchId,
@@ -45,10 +36,10 @@ export default function EquipmentTable({
 }) {
   const typeMap = useMemo(() => new Map(types.map((t) => [t.id, t])), [types]);
   const [q, setQ] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
   const [ownerFilter, setOwnerFilter] = useState("");
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({ key: "type", desc: false });
   const [editing, setEditing] = useState<{ item: Equipment | null; grp: string } | null>(null);
+  const [viewing, setViewing] = useState<Equipment | null>(null);
 
   // อุปกรณ์เดิมที่ยังไม่มี group: ใช้ group ของชนิด (POS → POS 1)
   const groupOf = (r: Equipment) => {
@@ -64,7 +55,6 @@ export default function EquipmentTable({
     return items
       .filter(
         (r) =>
-          (!statusFilter || r.status === statusFilter) &&
           (!ownerFilter || r.owner === ownerFilter) &&
           (!s ||
             [r.serial_no, r.brand, r.model, r.note, typeMap.get(r.type_id)?.name]
@@ -81,7 +71,7 @@ export default function EquipmentTable({
             : String(x).localeCompare(String(y), "th", { numeric: true });
         return (c || (a.serial_no ?? "").localeCompare(b.serial_no ?? "", undefined, { numeric: true })) * (sort.desc ? -1 : 1);
       });
-  }, [items, q, statusFilter, ownerFilter, sort, typeMap]);
+  }, [items, q, ownerFilter, sort, typeMap]);
 
   const th = (key: SortKey, label: string) => (
     <th
@@ -101,12 +91,6 @@ export default function EquipmentTable({
           placeholder="ค้นหา Serial / ยี่ห้อ / รุ่น"
           className="border border-[#B8DCFF] rounded-xl px-3 py-2 w-full sm:w-72 bg-white"
         />
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-[#B8DCFF] rounded-xl px-3 py-2 bg-white">
-          <option value="">ทุกสถานะ</option>
-          {Object.entries(STATUS).map(([k, v]) => (
-            <option key={k} value={k}>{v.label}</option>
-          ))}
-        </select>
         <select value={ownerFilter} onChange={(e) => setOwnerFilter(e.target.value)} className="border border-[#B8DCFF] rounded-xl px-3 py-2 bg-white">
           <option value="">ทุก Owner</option>
           {OWNERS.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -118,7 +102,7 @@ export default function EquipmentTable({
         const gAll = items.filter((r) => groupOf(r) === g);
         const rows = filtered.filter((r) => groupOf(r) === g);
         const expectedTotal = gTypes.reduce((s, t) => s + expectedIn(t, g), 0);
-        const have = gAll.filter((r) => r.status !== "lost").length;
+        const have = gAll.filter((r) => true).length;
         return (
           <section key={g} className="space-y-3">
             <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-[#081A3A] via-[#0C2553] to-[#044492] text-white px-4 py-3">
@@ -141,9 +125,7 @@ export default function EquipmentTable({
                     {th("owner", "Owner")}
                     {th("brand", "ยี่ห้อ / รุ่น")}
                     {th("serial_no", "Serial")}
-                    {th("status", "สถานะ")}
-                    {th("installed_at", "วันที่ติดตั้ง")}
-                    <th className="p-3">หมายเหตุ</th>
+                    <th className="p-3 text-center">รายละเอียด</th>
                     <th className="p-3" />
                   </tr>
                 </thead>
@@ -157,9 +139,15 @@ export default function EquipmentTable({
                       </td>
                       <td className="p-3">{[r.brand, r.model].filter(Boolean).join(" ") || "-"}</td>
                       <td className="p-3 font-mono text-[#0C2553]">{r.serial_no ?? "-"}</td>
-                      <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-xs ${STATUS[r.status].cls}`}>{STATUS[r.status].label}</span></td>
-                      <td className="p-3">{r.installed_at ?? "-"}</td>
-                      <td className="p-3 text-slate-600">{r.note ?? ""}</td>
+                      <td className="p-3 text-center">
+                        <button
+                          onClick={() => setViewing(r)}
+                          title={r.note ? "ดูรายละเอียด" : "ยังไม่มีรายละเอียด"}
+                          className={r.note ? "text-[#0086FF] hover:text-[#044492]" : "text-slate-300 hover:text-slate-400"}
+                        >
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
+                        </button>
+                      </td>
                       <td className="p-3 whitespace-nowrap text-right">
                         <button onClick={() => setEditing({ item: r, grp: g })} className="text-[#0086FF] mr-3">แก้ไข</button>
                         <button
@@ -174,7 +162,7 @@ export default function EquipmentTable({
                     </tr>
                   ))}
                   {!rows.length && (
-                    <tr><td colSpan={9} className="p-6 text-center text-slate-500">ยังไม่มีอุปกรณ์ใน {g}</td></tr>
+                    <tr><td colSpan={7} className="p-6 text-center text-slate-500">ยังไม่มีอุปกรณ์ใน {g}</td></tr>
                   )}
                 </tbody>
               </table>
@@ -182,6 +170,27 @@ export default function EquipmentTable({
           </section>
         );
       })}
+
+      {viewing && (
+        <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-40" onClick={() => setViewing(null)}>
+          <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl p-5 w-full max-w-md space-y-3 max-h-[90vh] overflow-y-auto">
+            <h2 className="font-extrabold text-[#0C2553]">รายละเอียดอุปกรณ์</h2>
+            <dl className="text-sm grid grid-cols-[6rem_1fr] gap-y-1">
+              <dt className="text-slate-500">ชนิด</dt><dd>{typeMap.get(viewing.type_id)?.code} {typeMap.get(viewing.type_id)?.name}</dd>
+              <dt className="text-slate-500">Owner</dt><dd>{viewing.owner}</dd>
+              <dt className="text-slate-500">ยี่ห้อ / รุ่น</dt><dd>{[viewing.brand, viewing.model].filter(Boolean).join(" ") || "-"}</dd>
+              <dt className="text-slate-500">Serial</dt><dd className="font-mono">{viewing.serial_no ?? "-"}</dd>
+            </dl>
+            <div className="rounded-xl bg-[#F4F9FF] border border-[#D8E9FF] p-3 text-sm whitespace-pre-wrap min-h-16">
+              {viewing.note || <span className="text-slate-400">ยังไม่มีรายละเอียด</span>}
+            </div>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => { const it = viewing; setViewing(null); setEditing({ item: it, grp: it.grp ?? "" }); }} className="text-[#0086FF] px-3 py-2 text-sm">แก้ไข</button>
+              <button onClick={() => setViewing(null)} className="bg-[#FFCB06] text-[#0C2553] font-extrabold border border-[#E5B300] rounded-xl px-4 py-2 text-sm">ปิด</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {editing && (
         <EquipmentForm
@@ -251,17 +260,7 @@ function EquipmentForm({
           <label className="block text-sm">ยี่ห้อ<input name="brand" defaultValue={item?.brand ?? ""} className={field} /></label>
           <label className="block text-sm">รุ่น<input name="model" defaultValue={item?.model ?? ""} className={field} /></label>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <label className="block text-sm">สถานะ
-            <select name="status" defaultValue={item?.status ?? "in_use"} className={field}>
-              {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-            </select>
-          </label>
-          <label className="block text-sm">วันที่ติดตั้ง
-            <input type="date" name="installed_at" defaultValue={item?.installed_at ?? ""} className={field} />
-          </label>
-        </div>
-        <label className="block text-sm">หมายเหตุ<textarea name="note" rows={2} defaultValue={item?.note ?? ""} className={field} /></label>
+        <label className="block text-sm">รายละเอียดอุปกรณ์<textarea name="note" rows={5} placeholder="สเปก, ตำแหน่งติดตั้ง, หมายเหตุอื่น ๆ" defaultValue={item?.note ?? ""} className={field} /></label>
         {state && "error" in state && <p className="text-sm text-red-600">{state.error}</p>}
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm">ยกเลิก</button>

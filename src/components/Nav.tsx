@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Nav() {
   return (
-    <nav className="sticky top-0 z-30 shadow-md">
+    <nav className="sticky top-0 z-30 shadow-md print:hidden">
       <div className="bg-white/95 backdrop-blur-md border-b border-[#D8E9FF]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 gap-3">
           <Link href="/" className="flex items-center gap-3 min-w-0">

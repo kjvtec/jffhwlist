@@ -38,6 +38,7 @@ export default async function Home() {
             <div className="text-xs text-[#B8DCFF]">{l}</div>
           </div>
         ))}
+        <a href="/api/export" className="bg-[#EFF7FF] hover:bg-[#DCEEFF] text-[#044492] font-bold border border-[#B8DCFF] rounded-xl px-4 py-2 text-sm">Export Excel ทั้งหมด</a>
         <TemplateButton branchId={null} label="เติมเทมเพลตทุกสาขา" />
         <AddBranches />
       </section>

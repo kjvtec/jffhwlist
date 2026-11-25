@@ -4,3 +4,26 @@
   --font-sans: var(--font-noto), "Noto Sans Thai", sans-serif;
   --font-mono: var(--font-jb), "JetBrains Mono", monospace;
 }
+
+/* พิมพ์ A4 พอดี */
+@page {
+  size: A4 portrait;
+  margin: 10mm;
+}
+
+.print-sheet {
+  width: 210mm;
+  max-width: 100%;
+}
+
+@media print {
+  body {
+    background: #fff !important;
+    padding-bottom: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .print-sheet {
+    width: 100%;
+  }
+}

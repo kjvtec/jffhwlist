@@ -13,7 +13,7 @@ export default async function BranchPage({ params }: { params: Promise<{ id: str
     supabase.from("equipment_types").select("id,code,name,qty_per_branch,sort_order,grp").order("sort_order"),
     supabase
       .from("equipment")
-      .select("id,type_id,grp,owner,serial_no,brand,model,status,installed_at,note")
+      .select("id,type_id,grp,owner,serial_no,brand,model,note")
       .eq("branch_id", id)
       .limit(1000),
   ]);
@@ -29,6 +29,8 @@ export default async function BranchPage({ params }: { params: Promise<{ id: str
           </h1>
         </div>
         <div className="flex items-center gap-3">
+        <a href={`/api/export?branch=${id}`} className="bg-[#EFF7FF] hover:bg-[#DCEEFF] text-[#044492] font-bold border border-[#B8DCFF] rounded-xl px-4 py-2 text-sm">Export Excel</a>
+        <Link href={`/branches/${id}/print`} target="_blank" className="bg-[#EFF7FF] hover:bg-[#DCEEFF] text-[#044492] font-bold border border-[#B8DCFF] rounded-xl px-4 py-2 text-sm">PDF / พิมพ์ A4</Link>
         <TemplateButton branchId={id} label="เติมตามเทมเพลต" />
         <form
           action={async () => {
