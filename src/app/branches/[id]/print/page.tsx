@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { loadExportRows } from "@/lib/export-data";
 import { GROUPS } from "@/lib/groups";
-import DetailList from "@/components/DetailList";
 import PrintButton from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
@@ -35,11 +34,10 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
             <table className="w-full text-[10px] border-collapse table-fixed">
               <colgroup>
                 <col style={{ width: "5%" }} />
-                <col style={{ width: "25%" }} />
-                <col style={{ width: "10%" }} />
-                <col style={{ width: "17%" }} />
-                <col style={{ width: "17%" }} />
-                <col style={{ width: "26%" }} />
+                <col style={{ width: "33%" }} />
+                <col style={{ width: "14%" }} />
+                <col style={{ width: "24%" }} />
+                <col style={{ width: "24%" }} />
               </colgroup>
               <thead>
                 <tr className="bg-[#EFF7FF] text-[#044492] text-left">
@@ -48,7 +46,6 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
                   <th className="border border-[#B8DCFF] p-1">Owner</th>
                   <th className="border border-[#B8DCFF] p-1">ยี่ห้อ / รุ่น</th>
                   <th className="border border-[#B8DCFF] p-1">Serial</th>
-                  <th className="border border-[#B8DCFF] p-1">รายละเอียด</th>
                 </tr>
               </thead>
               <tbody>
@@ -59,11 +56,10 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
                     <td className="border border-[#D8E9FF] p-1">{r.owner}</td>
                     <td className="border border-[#D8E9FF] p-1">{r.brandModel || "-"}</td>
                     <td className="border border-[#D8E9FF] p-1 font-mono break-all">{r.serial || "-"}</td>
-                    <td className="border border-[#D8E9FF] p-1"><DetailList text={r.detail} className="pl-3" /></td>
                   </tr>
                 ))}
                 {!list.length && (
-                  <tr><td colSpan={6} className="border border-[#D8E9FF] p-2 text-center text-slate-400">ไม่มีรายการ</td></tr>
+                  <tr><td colSpan={5} className="border border-[#D8E9FF] p-2 text-center text-slate-400">ไม่มีรายการ</td></tr>
                 )}
               </tbody>
             </table>

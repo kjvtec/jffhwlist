@@ -1,5 +1,4 @@
 import ExcelJS from "exceljs";
-import { normalizeDetail } from "@/lib/detail";
 import { loadExportRows } from "@/lib/export-data";
 
 export const dynamic = "force-dynamic";
@@ -30,11 +29,8 @@ export async function GET(req: Request) {
     { header: "Owner", key: "owner", width: 11 },
     { header: "ยี่ห้อ / รุ่น", key: "brandModel", width: 22 },
     { header: "Serial", key: "serial", width: 22 },
-    { header: "รายละเอียด", key: "detail", width: 40 },
   ];
-  rows.forEach((r) =>
-    ws.addRow({ ...r, detail: normalizeDetail(r.detail).map((l) => `• ${l}`).join("\n") }),
-  );
+  rows.forEach((r) => ws.addRow(r));
 
   const head = ws.getRow(1);
   head.font = { bold: true, color: { argb: "FFFFFFFF" } };
@@ -47,7 +43,7 @@ export async function GET(req: Request) {
       if (i > 1) c.font = { size: 10 };
     });
   });
-  ws.autoFilter = { from: "A1", to: "I1" };
+  ws.autoFilter = { from: "A1", to: "H1" };
   ws.pageSetup.printTitlesRow = "1:1";
 
   const buf = await wb.xlsx.writeBuffer();
