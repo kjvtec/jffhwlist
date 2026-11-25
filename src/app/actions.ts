@@ -35,6 +35,8 @@ export async function saveEquipment(_: unknown, fd: FormData) {
   const row = {
     branch_id: branchId,
     type_id: Number(fd.get("type_id")),
+    grp: String(fd.get("grp") ?? "") || null,
+    owner: String(fd.get("owner") ?? "VTEC"),
     serial_no: String(fd.get("serial_no") ?? "").trim(),
     brand: String(fd.get("brand") ?? "").trim() || null,
     model: String(fd.get("model") ?? "").trim() || null,

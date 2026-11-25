@@ -9,10 +9,10 @@ export default async function BranchPage({ params }: { params: Promise<{ id: str
   const supabase = await createClient();
   const [{ data: branch }, { data: types }, { data: items }] = await Promise.all([
     supabase.from("branches").select("id,code,name").eq("id", id).maybeSingle(),
-    supabase.from("equipment_types").select("id,code,name,qty_per_branch,sort_order").order("sort_order"),
+    supabase.from("equipment_types").select("id,code,name,qty_per_branch,sort_order,grp").order("sort_order"),
     supabase
       .from("equipment")
-      .select("id,type_id,serial_no,brand,model,status,installed_at,note")
+      .select("id,type_id,grp,owner,serial_no,brand,model,status,installed_at,note")
       .eq("branch_id", id)
       .limit(1000),
   ]);

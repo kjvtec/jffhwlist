@@ -142,5 +142,6 @@ export const SPECS: Record<string, string[]> = {
     "Print Resolution:  Up to 1,200 × 1,200 dpi",
     "Memory:  64 MB",
     "Display:  LED Indicators"
-  ]
+  ],
+  "1.10": ["Customer display:  Touch Screen 9.7”"]
 };

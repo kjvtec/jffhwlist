@@ -2,11 +2,21 @@
 
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { deleteEquipment, saveEquipment } from "@/app/actions";
+import { GROUPS, OWNERS, belongs, expectedIn } from "@/lib/groups";
 
-export type EqType = { id: number; code: string; name: string; qty_per_branch: number; sort_order: number };
+export type EqType = {
+  id: number;
+  code: string;
+  name: string;
+  qty_per_branch: number;
+  sort_order: number;
+  grp: string;
+};
 export type Equipment = {
   id: string;
   type_id: number;
+  grp: string | null;
+  owner: string;
   serial_no: string;
   brand: string | null;
   model: string | null;
@@ -22,7 +32,7 @@ const STATUS: Record<Equipment["status"], { label: string; cls: string }> = {
   lost: { label: "สูญหาย", cls: "bg-red-100 text-red-800" },
 };
 
-type SortKey = "type" | "serial_no" | "brand" | "status" | "installed_at";
+type SortKey = "type" | "serial_no" | "brand" | "owner" | "status" | "installed_at";
 
 export default function EquipmentTable({
   branchId,
@@ -36,37 +46,42 @@ export default function EquipmentTable({
   const typeMap = useMemo(() => new Map(types.map((t) => [t.id, t])), [types]);
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [ownerFilter, setOwnerFilter] = useState("");
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({ key: "type", desc: false });
-  const [editing, setEditing] = useState<Equipment | "new" | null>(null);
+  const [editing, setEditing] = useState<{ item: Equipment | null; grp: string } | null>(null);
 
-  const rows = useMemo(() => {
+  // อุปกรณ์เดิมที่ยังไม่มี group: ใช้ group ของชนิด (POS → POS 1)
+  const groupOf = (r: Equipment) => {
+    if (r.grp) return r.grp;
+    const t = typeMap.get(r.type_id);
+    return !t || t.grp === "POS" ? "POS 1" : t.grp;
+  };
+
+  const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    const f = items.filter(
-      (r) =>
-        (!statusFilter || r.status === statusFilter) &&
-        (!s ||
-          [r.serial_no, r.brand, r.model, r.note, typeMap.get(r.type_id)?.name]
-            .join(" ")
-            .toLowerCase()
-            .includes(s)),
-    );
     const val = (r: Equipment) =>
-      sort.key === "type"
-        ? (typeMap.get(r.type_id)?.sort_order ?? 0)
-        : (r[sort.key] ?? "");
-    return f.sort((a, b) => {
-      const x = val(a);
-      const y = val(b);
-      const c = typeof x === "number" && typeof y === "number" ? x - y : String(x).localeCompare(String(y), "th", { numeric: true });
-      return (c || a.serial_no.localeCompare(b.serial_no, undefined, { numeric: true })) * (sort.desc ? -1 : 1);
-    });
-  }, [items, q, statusFilter, sort, typeMap]);
-
-  const counts = useMemo(() => {
-    const m = new Map<number, number>();
-    items.forEach((i) => i.status !== "lost" && m.set(i.type_id, (m.get(i.type_id) ?? 0) + 1));
-    return m;
-  }, [items]);
+      sort.key === "type" ? (typeMap.get(r.type_id)?.sort_order ?? 0) : (r[sort.key] ?? "");
+    return items
+      .filter(
+        (r) =>
+          (!statusFilter || r.status === statusFilter) &&
+          (!ownerFilter || r.owner === ownerFilter) &&
+          (!s ||
+            [r.serial_no, r.brand, r.model, r.note, typeMap.get(r.type_id)?.name]
+              .join(" ")
+              .toLowerCase()
+              .includes(s)),
+      )
+      .sort((a, b) => {
+        const x = val(a);
+        const y = val(b);
+        const c =
+          typeof x === "number" && typeof y === "number"
+            ? x - y
+            : String(x).localeCompare(String(y), "th", { numeric: true });
+        return (c || a.serial_no.localeCompare(b.serial_no, undefined, { numeric: true })) * (sort.desc ? -1 : 1);
+      });
+  }, [items, q, statusFilter, ownerFilter, sort, typeMap]);
 
   const th = (key: SortKey, label: string) => (
     <th
@@ -78,82 +93,115 @@ export default function EquipmentTable({
   );
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-        {types.map((t) => {
-          const have = counts.get(t.id) ?? 0;
-          const ok = have >= t.qty_per_branch;
-          return (
-            <div key={t.id} className={`rounded-xl border p-3 text-sm shadow-sm ${ok ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
-              <div className="text-[#044492] font-bold">{t.name}</div>
-              <div className="font-semibold">{have}/{t.qty_per_branch}</div>
-            </div>
-          );
-        })}
-      </div>
-
+    <div className="space-y-5">
       <div className="flex flex-wrap gap-2 items-center">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหา Serial / ยี่ห้อ / รุ่น" className="border border-[#B8DCFF] rounded-xl px-3 py-2 w-full sm:w-72" />
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-[#B8DCFF] rounded-xl px-3 py-2">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="ค้นหา Serial / ยี่ห้อ / รุ่น"
+          className="border border-[#B8DCFF] rounded-xl px-3 py-2 w-full sm:w-72 bg-white"
+        />
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-[#B8DCFF] rounded-xl px-3 py-2 bg-white">
           <option value="">ทุกสถานะ</option>
           {Object.entries(STATUS).map(([k, v]) => (
             <option key={k} value={k}>{v.label}</option>
           ))}
         </select>
-        <button onClick={() => setEditing("new")} className="ml-auto bg-[#FFCB06] hover:bg-[#F5C000] text-[#0C2553] font-extrabold border border-[#E5B300] shadow-sm rounded-xl px-4 py-2 text-sm">
-          + เพิ่มอุปกรณ์
-        </button>
+        <select value={ownerFilter} onChange={(e) => setOwnerFilter(e.target.value)} className="border border-[#B8DCFF] rounded-xl px-3 py-2 bg-white">
+          <option value="">ทุก Owner</option>
+          {OWNERS.map((o) => <option key={o} value={o}>{o}</option>)}
+        </select>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-2xl border border-[#B8DCFF] shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-[#EFF7FF] text-[#044492] text-left">
-            <tr>
-              <th className="p-3">#</th>
-              {th("type", "ชนิดอุปกรณ์")}
-              {th("brand", "ยี่ห้อ / รุ่น")}
-              {th("serial_no", "Serial")}
-              {th("status", "สถานะ")}
-              {th("installed_at", "วันที่ติดตั้ง")}
-              <th className="p-3">หมายเหตุ</th>
-              <th className="p-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={r.id} className="border-t border-[#D8E9FF] hover:bg-[#F4F9FF]">
-                <td className="p-3 text-slate-500">{i + 1}</td>
-                <td className="p-3">{typeMap.get(r.type_id)?.code} {typeMap.get(r.type_id)?.name}</td>
-                <td className="p-3">{[r.brand, r.model].filter(Boolean).join(" ") || "-"}</td>
-                <td className="p-3 font-mono text-[#0C2553]">{r.serial_no}</td>
-                <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-xs ${STATUS[r.status].cls}`}>{STATUS[r.status].label}</span></td>
-                <td className="p-3">{r.installed_at ?? "-"}</td>
-                <td className="p-3 text-slate-600">{r.note ?? ""}</td>
-                <td className="p-3 whitespace-nowrap text-right">
-                  <button onClick={() => setEditing(r)} className="text-[#0086FF] mr-3">แก้ไข</button>
-                  <button
-                    onClick={() => {
-                      if (confirm(`ลบ ${r.serial_no} ?`)) deleteEquipment(r.id, branchId);
-                    }}
-                    className="text-red-600"
-                  >
-                    ลบ
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {!rows.length && (
-              <tr><td colSpan={8} className="p-6 text-center text-slate-500">ยังไม่มีอุปกรณ์</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {GROUPS.map((g) => {
+        const gTypes = types.filter((t) => belongs(t, g));
+        const gAll = items.filter((r) => groupOf(r) === g);
+        const rows = filtered.filter((r) => groupOf(r) === g);
+        const expectedTotal = gTypes.reduce((s, t) => s + expectedIn(t, g), 0);
+        const have = gAll.filter((r) => r.status !== "lost").length;
+        return (
+          <section key={g} className="space-y-3">
+            <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-[#081A3A] via-[#0C2553] to-[#044492] text-white px-4 py-3">
+              <h2 className="font-extrabold flex-1">{g}</h2>
+              <span className="text-sm text-[#B8DCFF]">{have}/{expectedTotal} ชิ้น</span>
+              <button
+                onClick={() => setEditing({ item: null, grp: g })}
+                className="bg-[#FFCB06] hover:bg-[#F5C000] text-[#0C2553] font-extrabold border border-[#E5B300] rounded-xl px-3 py-1.5 text-sm"
+              >
+                + เพิ่ม
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+              {gTypes.map((t) => {
+                const n = gAll.filter((r) => r.type_id === t.id && r.status !== "lost").length;
+                const need = expectedIn(t, g);
+                return (
+                  <div key={t.id} className={`rounded-xl border p-3 text-sm shadow-sm ${n >= need ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
+                    <div className="text-[#044492] font-bold">{t.name}</div>
+                    <div className="font-semibold">{n}/{need}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="overflow-x-auto bg-white rounded-2xl border border-[#B8DCFF] shadow-sm">
+              <table className="w-full text-sm">
+                <thead className="bg-[#EFF7FF] text-[#044492] text-left">
+                  <tr>
+                    <th className="p-3">#</th>
+                    {th("type", "ชนิดอุปกรณ์")}
+                    {th("owner", "Owner")}
+                    {th("brand", "ยี่ห้อ / รุ่น")}
+                    {th("serial_no", "Serial")}
+                    {th("status", "สถานะ")}
+                    {th("installed_at", "วันที่ติดตั้ง")}
+                    <th className="p-3">หมายเหตุ</th>
+                    <th className="p-3" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, i) => (
+                    <tr key={r.id} className="border-t border-[#D8E9FF] hover:bg-[#F4F9FF]">
+                      <td className="p-3 text-slate-500">{i + 1}</td>
+                      <td className="p-3">{typeMap.get(r.type_id)?.code} {typeMap.get(r.type_id)?.name}</td>
+                      <td className="p-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${r.owner === "VTEC" ? "bg-[#EFF7FF] text-[#044492]" : "bg-[#FFFBEB] text-[#8A6500]"}`}>{r.owner}</span>
+                      </td>
+                      <td className="p-3">{[r.brand, r.model].filter(Boolean).join(" ") || "-"}</td>
+                      <td className="p-3 font-mono text-[#0C2553]">{r.serial_no}</td>
+                      <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-xs ${STATUS[r.status].cls}`}>{STATUS[r.status].label}</span></td>
+                      <td className="p-3">{r.installed_at ?? "-"}</td>
+                      <td className="p-3 text-slate-600">{r.note ?? ""}</td>
+                      <td className="p-3 whitespace-nowrap text-right">
+                        <button onClick={() => setEditing({ item: r, grp: g })} className="text-[#0086FF] mr-3">แก้ไข</button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`ลบ ${r.serial_no} ?`)) deleteEquipment(r.id, branchId);
+                          }}
+                          className="text-red-600"
+                        >
+                          ลบ
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {!rows.length && (
+                    <tr><td colSpan={9} className="p-6 text-center text-slate-500">ยังไม่มีอุปกรณ์ใน {g}</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        );
+      })}
 
       {editing && (
         <EquipmentForm
           branchId={branchId}
           types={types}
-          item={editing === "new" ? null : editing}
+          item={editing.item}
+          initialGroup={editing.grp}
           onClose={() => setEditing(null)}
         />
       )}
@@ -165,27 +213,48 @@ function EquipmentForm({
   branchId,
   types,
   item,
+  initialGroup,
   onClose,
 }: {
   branchId: string;
   types: EqType[];
   item: Equipment | null;
+  initialGroup: string;
   onClose: () => void;
 }) {
   const [state, action, pending] = useActionState(saveEquipment, null);
+  const [grp, setGrp] = useState(initialGroup);
   useEffect(() => {
     if (state && "ok" in state) onClose();
   }, [state, onClose]);
+  const options = types.filter((t) => belongs(t, grp));
   const field = "w-full border border-[#B8DCFF] rounded-xl px-3 py-2";
   return (
-    <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-10" onClick={onClose}>
-      <form action={action} onClick={(e) => e.stopPropagation()} className="bg-white rounded-xl p-5 w-full max-w-md space-y-3 max-h-[90vh] overflow-y-auto">
-        <h2 className="font-semibold">{item ? "แก้ไขอุปกรณ์" : "เพิ่มอุปกรณ์"}</h2>
+    <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-40" onClick={onClose}>
+      <form action={action} onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl p-5 w-full max-w-md space-y-3 max-h-[90vh] overflow-y-auto">
+        <h2 className="font-extrabold text-[#0C2553]">{item ? "แก้ไขอุปกรณ์" : "เพิ่มอุปกรณ์"}</h2>
         <input type="hidden" name="id" defaultValue={item?.id ?? ""} />
         <input type="hidden" name="branch_id" value={branchId} />
+        <div className="grid grid-cols-2 gap-2">
+          <label className="block text-sm">Group
+            <select name="grp" value={grp} onChange={(e) => setGrp(e.target.value)} className={field}>
+              {GROUPS.map((g) => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </label>
+          <label className="block text-sm">Owner
+            <select name="owner" defaultValue={item?.owner ?? "VTEC"} className={field}>
+              {OWNERS.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </label>
+        </div>
         <label className="block text-sm">ชนิดอุปกรณ์
-          <select name="type_id" defaultValue={item?.type_id ?? types[0]?.id} className={field}>
-            {types.map((t) => <option key={t.id} value={t.id}>{t.code} {t.name}</option>)}
+          <select
+            key={grp}
+            name="type_id"
+            defaultValue={options.some((t) => t.id === item?.type_id) ? item?.type_id : options[0]?.id}
+            className={field}
+          >
+            {options.map((t) => <option key={t.id} value={t.id}>{t.code} {t.name}</option>)}
           </select>
         </label>
         <label className="block text-sm">Serial
