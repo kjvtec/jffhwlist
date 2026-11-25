@@ -30,16 +30,19 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
         <thead><tr><td className="p-0"><div className="print:h-[10mm]" /></td></tr></thead>
         <tfoot><tr><td className="p-0"><div className="print:h-[10mm]" /></td></tr></tfoot>
         <tbody><tr><td className="p-0 align-top">
-      <header className="border-b-2 border-[#0C2553] pb-2 mb-3 flex items-center justify-between">
-        <div>
-          <h1 className="text-base font-extrabold text-[#0C2553]">รายการอุปกรณ์ Hardware — สาขา {branch.code} {branch.name}</h1>
-          <p className="text-[10px] text-slate-500">VTec Pos Retail • Jiffy Project</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <p className="text-[10px] text-slate-500">พิมพ์เมื่อ {today}</p>
+      <header className="border-b-2 border-[#0C2553] pb-2 mb-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logos/jiffy-logo.png" alt="Jiffy" className="h-12 w-auto object-contain" />
+          <img src="/logos/jiffy-print.png" alt="Jiffy" className="h-11 w-auto object-contain shrink-0" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logos/pttrm-print.jpg" alt="PTT RM" className="h-11 w-auto object-contain shrink-0" />
+          <span className="h-9 w-px bg-slate-300 shrink-0" />
+          <div className="min-w-0">
+            <h1 className="text-base font-extrabold text-[#0C2553]">รายการอุปกรณ์ Hardware — สาขา {branch.code} {branch.name}</h1>
+            <p className="text-[10px] text-slate-500">VTec Pos Retail • Jiffy Project</p>
+          </div>
         </div>
+        <p className="text-[10px] text-slate-500 shrink-0">พิมพ์เมื่อ {today}</p>
       </header>
 
       {GROUPS.map((g) => {
